@@ -2,8 +2,21 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
 const util = require('util');
+const cTable = require('console.table')
 
 
+//duplicates---------------
+const express = require('express');
+// Import and require mysql2
+const mysql = require('mysql2');
+
+
+const app = express();
+
+// Express middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+//duplicates---------------
 
 // create writeFile function using promises instead of a callback function
 // const writeFileAsync = util.promisify(fs.writeFile);
@@ -86,6 +99,23 @@ async function switchCheck(casePass) {
 
     case 'View All Roles':
       console.log("View All Roles")
+      app.get('/api/roles', (req, res) => {
+        const sql = `SELECT title, salary FROM roles`;
+      
+       let temp = await db.query(sql, (err, rows) => {
+          if (err) {
+            res.status(500).json({ error: err.message });
+             return;
+          }
+          res.json({
+            message: 'success',
+            data: rows
+          });
+        });
+
+        console.log(temp);
+        cTable(temp.data);
+      });
       return true
     break;
 

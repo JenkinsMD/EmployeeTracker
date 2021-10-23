@@ -10,14 +10,19 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+let sql;
+
 
 // const queryList = require('./querylist');
-const { secondPrompt, switchCheck } = require('./index');
+
+const cTable = require('console.table')
+// const { secondPrompt, switchCheck } = require('./index');
 
 // Connect to database
 const db = mysql.createConnection(
   {
-    host: '127.0.0.1',
+    // host: '127.0.0.1',
+    host: 'localhost',
     port: 3306,
    
     // MySQL username,
@@ -31,99 +36,6 @@ const db = mysql.createConnection(
   console.log(`Connected to the movies_db database.`)
 );
 
-// // Create a movie
-// app.post('/api/new-movie', ({ body }, res) => {
-//   const sql = `INSERT INTO movies (movie_name)
-//     VALUES (?)`;
-//   const params = [body.movie_name];
-
-//   db.query(sql, params, (err, result) => {
-//     if (err) {
-//       res.status(400).json({ error: err.message });
-//       return;
-//     }
-//     res.json({
-//       message: 'success',
-//       data: body
-//     });
-//   });
-// });
-
-// // Read all movies
-// app.get('/api/movies', (req, res) => {
-//   const sql = `SELECT id, movie_name AS title FROM movies`;
-
-//   db.query(sql, (err, rows) => {
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//        return;
-//     }
-//     res.json({
-//       message: 'success',
-//       data: rows
-//     });
-//   });
-// });
-
-// // Delete a movie
-// app.delete('/api/movie/:id', (req, res) => {
-//   const sql = `DELETE FROM movies WHERE id = ?`;
-//   const params = [req.params.id];
-
-//   db.query(sql, params, (err, result) => {
-//     if (err) {
-//       res.statusMessage(400).json({ error: res.message });
-//     } else if (!result.affectedRows) {
-//       res.json({
-//       message: 'Movie not found'
-//       });
-//     } else {
-//       res.json({
-//         message: 'deleted',
-//         changes: result.affectedRows,
-//         id: req.params.id
-//       });
-//     }
-//   });
-// });
-
-// // Read list of all reviews and associated movie name using LEFT JOIN
-// app.get('/api/movie-reviews', (req, res) => {
-//   const sql = `SELECT movies.movie_name AS movie, reviews.review FROM reviews LEFT JOIN movies ON reviews.movie_id = movies.id ORDER BY movies.movie_name;`;
-//   db.query(sql, (err, rows) => {
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//       return;
-//     }
-//     res.json({
-//       message: 'success',
-//       data: rows
-//     });
-//   });
-// });
-
-// // Update review name
-// app.put('/api/review/:id', (req, res) => {
-//   const sql = `UPDATE reviews SET review = ? WHERE id = ?`;
-//   const params = [req.body.review, req.params.id];
-
-//   db.query(sql, params, (err, result) => {
-//     if (err) {
-//       res.status(400).json({ error: err.message });
-//     } else if (!result.affectedRows) {
-//       res.json({
-//         message: 'Movie not found'
-//       });
-//     } else {
-//       res.json({
-//         message: 'success',
-//         data: req.body,
-//         changes: result.affectedRows
-//       });
-//     }
-//   });
-// });
-
 // // Default response for any other request (Not Found)
 app.use((req, res) => {
   res.status(404).end();
@@ -134,5 +46,270 @@ app.listen(PORT, () => {
 });
 
 //list of scripts
-let endofprompt= secondPrompt();
+const secondPrompt = async () =>{
+  let status ='';
+  do{
+    let temp = [];
+  
+    //Main Prompt to navigate tables
+    temp = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'options',
+        message: 'What would you like to do?',
+        choices: ['View All Employees','Add Employee','Update Employee Role','View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
+      },
+  
+      
+     
+    ]);
+    console.log(temp)
+    status = await switchCheck(temp.options)
+    // if (status===false) {
+     
+    // } else {
+     
+    // }
+    
+   
+  }while(status != false);
+  } ;
+  
 
+//hand Navigation Choice
+async function switchCheck(casePass) {
+  switch(casePass){
+    case 'View All Employees':
+      console.log("View All Employees")
+        
+            sql = `SELECT employee.id, employee.first_name, employee.last_name, roles.salary, department.dept_name FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.dept_id = department.id`;
+            // const sql = `SELECT * FROM employee` ;
+          db.query(sql, (err, res) => {
+                if (err) {
+                  res.status(500).json({ error: err.message });
+                  return;
+                }
+                console.log("\n")
+                console.table(res)
+              
+              });  
+
+      return true
+    break;
+
+    case 'Add Employee':
+      console.log("Add Employee")
+      let tempemp = await newemp();
+      
+      console.log(tempemp)
+      sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${tempemp.firstName}', '${tempemp.lastName}', ${tempemp.role_ID},${tempemp.man_ID})`;
+      // const sql = `SELECT * FROM employee` ;
+      console.log(sql)
+    //  let holdup =   await maketable(sql)
+      db.query(sql, (err, res) => {
+        console.log("in query")
+           if (err) {
+            // res.status(500).json({ error: err.message });
+            console.log('Error', err)
+           } 
+
+       });
+         console.log("Employee added")
+      console.log("byeeeeee")
+     //  console.log("hu"+holdup)
+     // return holdup
+      
+      return true
+
+    break;
+
+
+    case 'Update Employee Role':
+      console.log("Update Employee Role")
+   
+      return true
+
+    break;
+
+    case 'View All Roles':
+      console.log("View All Roles")
+      
+      sql = `SELECT roles.title , roles.id, department.dept_name , roles.salary FROM roles LEFT JOIN department ON roles.dept_id = department.id`;
+      // const sql = `SELECT * FROM employee` ;
+     db.query(sql, (err, res) => {
+          if (err) {
+            res.status(500).json({ error: err.message });
+             return;
+          }
+          console.log("\n")
+          console.table(res)
+         
+        });        
+     
+      return true
+    break;
+
+    case 'Add Role':
+      console.log("Add Role")
+   
+      let temproll = await newroll();
+      
+      console.log(temproll)
+      sql = `INSERT INTO roles (title, salary, dept_id) VALUES ('${temproll.title}', ${temproll.salary}, ${temproll.dept_ID})`;
+      // const sql = `SELECT * FROM employee` ;
+      console.log(sql)
+    //  let holdup =   await maketable(sql)
+      db.query(sql, (err, res) => {
+        console.log("in query")
+           if (err) {
+            // res.status(500).json({ error: err.message });
+            console.log('Error', err)
+           } 
+
+       });
+         console.log("Employee added")
+      console.log("byeeeeee")
+     //  console.log("hu"+holdup)
+     // return holdup
+        
+    break;
+
+    case 'View All Departments':
+      console.log("View All Departments")
+        sql = `SELECT * FROM department`;
+      
+         db.query(sql, (err, res) => {
+            if (err) {
+              res.status(500).json({ error: err.message });
+              return;
+            }
+            console.log("\n")
+            console.table(res)
+          
+          }); 
+
+
+      return true
+
+    break;
+
+    case 'Add Department':
+      console.log("Add Department")
+        
+      let tempdept = await newdept();
+      
+      console.log(tempdept)
+      sql = `INSERT INTO department (dept_name) VALUES ('${tempdept.title}' )`;
+      // const sql = `SELECT * FROM employee` ;
+      console.log(sql)
+    //  let holdup =   await maketable(sql)
+      db.query(sql, (err, res) => {
+        console.log("in query")
+           if (err) {
+            // res.status(500).json({ error: err.message });
+            console.log('Error', err)
+           } 
+           
+       });
+         console.log("Dept added")
+      console.log("byeeeeee")
+     //  console.log("hu"+holdup)
+     // return holdup
+   
+      return true
+
+    break;
+
+    case 'Quit':
+      console.log("Quit")
+   
+      
+      return false
+
+    break;
+
+
+    default:
+      console.log("nah")
+      return false
+  }
+
+
+}
+
+//Start
+secondPrompt();
+
+
+async function newroll(){
+  return await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'title',
+      message: 'Add name of new roll:',
+    },
+    {
+      type: 'input',
+      name: 'salary',
+      message: 'Enter salary of new roll:',
+    },
+    {
+      type: 'input',
+      name: 'dept_ID',
+      message: 'Enter deptartment ID:',
+    }
+  ]);
+};
+
+async function newdept(){
+  return await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'title',
+      message: 'Add name of new roll:',
+    },
+   
+  ]);
+};
+
+async function newemp(){
+  return await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'firstName',
+      message: 'Enter First Name:',
+    },
+    {
+      type: 'input',
+      name: 'lastName',
+      message: 'Enter Last Name:',
+    },
+    {
+      type: 'input',
+      name: 'role_ID',
+      message: 'Enter Role ID:',
+    },
+    {
+      type: 'input',
+      name: 'man_ID',
+      message: 'Enter Manager ID:',
+    }
+  ]);
+};
+
+function maketable (sql) {
+
+  db.query(sql, (err, res) => {
+    console.log("in query")
+       if (err) {
+         res.status(500).json({ error: err.message });
+          return true;
+       } 
+
+       return false;
+         console.log("\n")
+         console.log("Employee added")
+       
+       
+   });
+}

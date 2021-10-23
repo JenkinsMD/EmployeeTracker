@@ -73,7 +73,7 @@ async function switchCheck(casePass) {
     case 'View All Employees':
       console.log("View All Employees")
         
-            sql = `SELECT employee.id, employee.first_name, employee.last_name, roles.salary, department.dept_name FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.dept_id = department.id`;
+            sql = `SELECT employee.id, employee.first_name, employee.last_name, roles.title, roles.salary, department.dept_name FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.dept_id = department.id`;
           
           db.query(sql, (err, res) => {
                 if (err) {
@@ -119,7 +119,7 @@ async function switchCheck(casePass) {
       let changeroll = await updateroll();
       
       console.log(changeroll)
-      sql = `UPDATE 'employee' SET 'role_id' = '${changeroll.role_ID}', WHERE 'id' = '${changeroll.emp_ID}'`;
+      sql = `UPDATE employee SET role_id = ${changeroll.role_ID} WHERE id = ${changeroll.emp_ID}`;
    
       console.log(sql)
 

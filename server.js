@@ -13,10 +13,9 @@ app.use(express.json());
 let sql;
 
 
-// const queryList = require('./querylist');
 
 const cTable = require('console.table')
-// const { secondPrompt, switchCheck } = require('./index');
+
 
 // Connect to database
 const db = mysql.createConnection(
@@ -27,9 +26,6 @@ const db = mysql.createConnection(
    
     // MySQL username,
     user: 'root',
-    //sgbe
-    // socketPath: tmp/mysql.sock,
-    // TODO: Add MySQL password here
     password: 'Squeak37?!',
     database: 'emptracker_db'
   },
@@ -65,25 +61,20 @@ const secondPrompt = async () =>{
     ]);
     console.log(temp)
     status = await switchCheck(temp.options)
-    // if (status===false) {
-     
-    // } else {
-     
-    // }
-    
+
    
   }while(status != false);
   } ;
   
 
-//hand Navigation Choice
+//handle Navigation Choice
 async function switchCheck(casePass) {
   switch(casePass){
     case 'View All Employees':
       console.log("View All Employees")
         
             sql = `SELECT employee.id, employee.first_name, employee.last_name, roles.salary, department.dept_name FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.dept_id = department.id`;
-            // const sql = `SELECT * FROM employee` ;
+          
           db.query(sql, (err, res) => {
                 if (err) {
                   res.status(500).json({ error: err.message });
@@ -103,30 +94,44 @@ async function switchCheck(casePass) {
       
       console.log(tempemp)
       sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${tempemp.firstName}', '${tempemp.lastName}', ${tempemp.role_ID},${tempemp.man_ID})`;
-      // const sql = `SELECT * FROM employee` ;
+ 
       console.log(sql)
-    //  let holdup =   await maketable(sql)
+
       db.query(sql, (err, res) => {
         console.log("in query")
            if (err) {
-            // res.status(500).json({ error: err.message });
+    
             console.log('Error', err)
            } 
 
        });
          console.log("Employee added")
       console.log("byeeeeee")
-     //  console.log("hu"+holdup)
-     // return holdup
-      
+  
       return true
 
     break;
 
-
+//Not working -------------------------------
     case 'Update Employee Role':
       console.log("Update Employee Role")
    
+      let changeroll = await updateroll();
+      
+      console.log(changeroll)
+      sql = `UPDATE 'employee' SET 'role_id' = '${changeroll.role_ID}', WHERE 'id' = '${changeroll.emp_ID}'`;
+   
+      console.log(sql)
+
+      db.query(sql, (err, res) => {
+        console.log("in query")
+           if (err) {
+        
+            console.log('Error', err)
+           } 
+
+       });
+    
       return true
 
     break;
@@ -135,7 +140,7 @@ async function switchCheck(casePass) {
       console.log("View All Roles")
       
       sql = `SELECT roles.title , roles.id, department.dept_name , roles.salary FROM roles LEFT JOIN department ON roles.dept_id = department.id`;
-      // const sql = `SELECT * FROM employee` ;
+   
      db.query(sql, (err, res) => {
           if (err) {
             res.status(500).json({ error: err.message });
@@ -156,21 +161,18 @@ async function switchCheck(casePass) {
       
       console.log(temproll)
       sql = `INSERT INTO roles (title, salary, dept_id) VALUES ('${temproll.title}', ${temproll.salary}, ${temproll.dept_ID})`;
-      // const sql = `SELECT * FROM employee` ;
+     
       console.log(sql)
-    //  let holdup =   await maketable(sql)
+    
       db.query(sql, (err, res) => {
         console.log("in query")
            if (err) {
-            // res.status(500).json({ error: err.message });
+        
             console.log('Error', err)
            } 
 
        });
-         console.log("Employee added")
-      console.log("byeeeeee")
-     //  console.log("hu"+holdup)
-     // return holdup
+ 
         
     break;
 
@@ -200,21 +202,16 @@ async function switchCheck(casePass) {
       
       console.log(tempdept)
       sql = `INSERT INTO department (dept_name) VALUES ('${tempdept.title}' )`;
-      // const sql = `SELECT * FROM employee` ;
-      console.log(sql)
-    //  let holdup =   await maketable(sql)
+
       db.query(sql, (err, res) => {
         console.log("in query")
            if (err) {
-            // res.status(500).json({ error: err.message });
+           
             console.log('Error', err)
            } 
            
        });
-         console.log("Dept added")
-      console.log("byeeeeee")
-     //  console.log("hu"+holdup)
-     // return holdup
+   
    
       return true
 
@@ -240,7 +237,7 @@ async function switchCheck(casePass) {
 //Start
 secondPrompt();
 
-
+//Makes a new role
 async function newroll(){
   return await inquirer.prompt([
     {
@@ -261,6 +258,24 @@ async function newroll(){
   ]);
 };
 
+//Updates role
+async function updateroll(){
+  return await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'emp_ID',
+      message: 'Enter Employee ID whose roll you want to update:',
+    },
+    {
+      type: 'input',
+      name: 'role_ID',
+      message: 'Enter new roll ID:',
+    }
+  
+  ]);
+};
+
+//Makes a new Department
 async function newdept(){
   return await inquirer.prompt([
     {
@@ -272,6 +287,7 @@ async function newdept(){
   ]);
 };
 
+//Makes a new employee
 async function newemp(){
   return await inquirer.prompt([
     {
@@ -297,19 +313,4 @@ async function newemp(){
   ]);
 };
 
-function maketable (sql) {
 
-  db.query(sql, (err, res) => {
-    console.log("in query")
-       if (err) {
-         res.status(500).json({ error: err.message });
-          return true;
-       } 
-
-       return false;
-         console.log("\n")
-         console.log("Employee added")
-       
-       
-   });
-}

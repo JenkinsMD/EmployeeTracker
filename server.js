@@ -281,7 +281,7 @@ async function newdept(){
     {
       type: 'input',
       name: 'title',
-      message: 'Add name of new roll:',
+      message: 'Add name of new department:',
     },
    
   ]);
